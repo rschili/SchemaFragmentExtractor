@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Xml.Linq;
 
 namespace SchemaFragmentExtractor
 {
@@ -20,6 +21,8 @@ namespace SchemaFragmentExtractor
         public BulkObservableCollection<SchemaFile> Schemas { get; } = new BulkObservableCollection<SchemaFile>();
 
         public BulkObservableCollection<ECClass> AllClasses { get; } = new BulkObservableCollection<ECClass>();
+
+        public List<ECClass> SelectedClasses { get; set; } = new List<ECClass>();
 
         private string _classFilter = "";
 
@@ -37,6 +40,8 @@ namespace SchemaFragmentExtractor
                 CollectionViewSource.GetDefaultView(AllClasses).Refresh();
             }
         }
+
+        public string Result { get; set; } = "";
 
         public ViewModel()
         {
@@ -80,6 +85,22 @@ namespace SchemaFragmentExtractor
                 AllClasses.Clear();
                 AllClasses.AddRange(classes);
             });
+        }
+        internal void SelectClasses(List<ECClass> classes)
+        {
+            SelectedClasses = classes;
+            var firstClass = classes.First();
+            var root = new XElement(firstClass.Schema.Document.Root.Name);
+            root.ReplaceAttributes(firstClass.Schema.Document.Root.Attributes());
+            var xD = new XDocument(root);
+
+            foreach(var c in classes)
+            {
+                XElement deepCopy = new XElement(c.Element);
+                root.Add(deepCopy);
+            }
+            Result = xD.ToString();
+            PerformPropertyChanged(nameof(Result));
         }
     }
 }

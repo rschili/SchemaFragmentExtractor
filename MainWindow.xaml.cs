@@ -52,5 +52,10 @@ namespace SchemaFragmentExtractor
             e.Effects = DragDropEffects.Copy;
             e.Handled = true;
         }
+
+        private void FilteredClassesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            VM.SelectClasses(FilteredClassesView.SelectedItems.Cast<ECClass>().ToList());
+        }
     }
 }

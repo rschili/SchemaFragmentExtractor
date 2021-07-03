@@ -22,7 +22,7 @@
                 <StackPanel DockPanel.Dock="Top">
                     <TextBlock Text="{Binding ElementName=FilteredClassesView, Path=Items.Count, StringFormat={}{0} Classes found}" />
                 </StackPanel>
-                <ListView x:Name="FilteredClassesView" Grid.Row="1" ItemsSource="{Binding AllClasses}">
+                <ListView x:Name="FilteredClassesView" Grid.Row="1" ItemsSource="{Binding AllClasses}" SelectionMode="Multiple" SelectionChanged="FilteredClassesView_SelectionChanged">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="TypeName" Width="350" DisplayMemberBinding="{Binding TypeName}" />
@@ -33,7 +33,9 @@
             </DockPanel>
         </TabItem>
         <TabItem Header="Format">
-            
+            <DockPanel>
+                <TextBox Text="{Binding Result}" IsReadOnly="True" />
+            </DockPanel>
         </TabItem>
     </TabControl>
 
