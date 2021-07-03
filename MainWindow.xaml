@@ -5,8 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SchemaFragmentExtractor"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Schema Fragment Extractor Supreme" Height="450" Width="800">
+    <TabControl>
+        <TabItem Header="Input">
+            <ListBox AllowDrop="True" IsSynchronizedWithCurrentItem="True" DragOver="InputDragOver" Drop="InputDrop" ItemsSource="{Binding Schemas}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:SchemaFile}">
+                        <TextBlock Text="{Binding Label, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </TabItem>
+        <TabItem Header="Select">
+            <TextBlock Text="Asdf" />
+        </TabItem>
+        <TabItem Header="Format">
+            
+        </TabItem>
+    </TabControl>
 
-    </Grid>
 </Window>
