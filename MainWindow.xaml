@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SchemaFragmentExtractor"
+        xmlns:local="clr-namespace:SchemaFragmentExtractor" d:DataContext="{d:DesignInstance Type=local:ViewModel}"
         mc:Ignorable="d"
         Title="Schema Fragment Extractor Supreme" Height="450" Width="800">
     <TabControl>
@@ -17,7 +17,20 @@
             </ListBox>
         </TabItem>
         <TabItem Header="Select">
-            <TextBlock Text="Asdf" />
+            <DockPanel>
+                <TextBox DockPanel.Dock="Top" Text="{Binding ClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="{Binding ElementName=FilteredClassesView, Path=Items.Count, StringFormat={}{0} Classes found}" />
+                </StackPanel>
+                <ListView x:Name="FilteredClassesView" Grid.Row="1" ItemsSource="{Binding AllClasses}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="TypeName" Width="350" DisplayMemberBinding="{Binding TypeName}" />
+                            <GridViewColumn Header="Schema" Width="320" DisplayMemberBinding="{Binding Schema.SchemaFullName}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
         </TabItem>
         <TabItem Header="Format">
             

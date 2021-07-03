@@ -26,6 +26,8 @@ namespace SchemaFragmentExtractor
 
         public string? SchemaName { get; set; }
 
+        public string? SchemaFullName { get; set; }
+
         public string? Version { get; set; }
 
         public List<ECClass> Classes { get; } = new List<ECClass>();
@@ -42,7 +44,7 @@ namespace SchemaFragmentExtractor
                     PerformPropertyChanged(nameof(Label));
                     await Task.Run(() => LoadContents());
                     int? lineNumber = (Document.LastNode as IXmlLineInfo)?.LineNumber;
-                    Label = $"{SchemaName} {Version} ({Classes.Count} classes, {lineNumber} Lines)";
+                    Label = $"{SchemaFullName} ({Classes.Count} classes, {lineNumber} Lines)";
                     PerformPropertyChanged(nameof(Label));
                 }
             }
@@ -67,6 +69,7 @@ namespace SchemaFragmentExtractor
             var root = Document.Root;
             SchemaName = root?.Attribute("schemaName")?.Value;
             Version = root?.Attribute("version")?.Value;
+            SchemaFullName = $"{SchemaName}.{Version}";
             if (SchemaName == null || Version == null || root == null)
                 throw new InvalidDataException("Format unknown.");
 
@@ -77,7 +80,7 @@ namespace SchemaFragmentExtractor
 
                 var typeName = child.Attribute("typeName")?.Value;
                 if (typeName == null) continue; // Should never happen?
-                Classes.Add(new ECClass(typeName, child));
+                Classes.Add(new ECClass(typeName, child, this));
             }
         }
     }
@@ -85,12 +88,16 @@ namespace SchemaFragmentExtractor
     public class ECClass
     {
         public string TypeName { get; init; }
+        public string SchemaName => Schema?.SchemaName ?? "";
         public XElement Element { get; init; }
 
-        public ECClass(string typeName, XElement child)
+        public SchemaFile Schema { get; init; }
+
+        public ECClass(string typeName, XElement child, SchemaFile schema)
         {
             TypeName = typeName;
             Element = child;
+            Schema = schema;
         }
     }
 }
