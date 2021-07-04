@@ -9,6 +9,22 @@
     <TabControl>
         <TabItem Header="Input">
             <ListBox AllowDrop="True" IsSynchronizedWithCurrentItem="True" DragOver="InputDragOver" Drop="InputDrop" ItemsSource="{Binding Schemas}">
+                <ListBox.Style>
+                    <Style TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
+                        <Style.Triggers>
+                            <DataTrigger 
+            Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=Items.Count}" Value="0">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <TextBlock Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center">Drop Schema Files (*.ecschema.xml) here</TextBlock>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.Style>
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type local:SchemaFile}">
                         <TextBlock Text="{Binding Label, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -20,6 +36,8 @@
             <DockPanel>
                 <TextBox DockPanel.Dock="Top" Text="{Binding ClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Foreground="Gray">Pick the classes you want to use by selecting them. Multiple Items are supported.</TextBlock>
+                    <TextBlock Foreground="Gray">The TextBox above can be used to filter classes (Multiple keywords supported, split by space)</TextBlock>
                     <TextBlock Text="{Binding ElementName=FilteredClassesView, Path=Items.Count, StringFormat={}{0} Classes found}" />
                 </StackPanel>
                 <ListView x:Name="FilteredClassesView" Grid.Row="1" ItemsSource="{Binding AllClasses}" SelectionMode="Multiple" SelectionChanged="FilteredClassesView_SelectionChanged">
@@ -34,6 +52,11 @@
         </TabItem>
         <TabItem Header="Format">
             <DockPanel>
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Foreground="Gray">Result Schema can be copies from the box below.</TextBlock>
+                    <CheckBox>Remove DisplayLabels</CheckBox>
+                    <CheckBox>Remove Descriptions</CheckBox>
+                </StackPanel>
                 <TextBox Text="{Binding Result}" IsReadOnly="True" />
             </DockPanel>
         </TabItem>

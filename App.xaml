@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:SchemaFragmentExtractor"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+
     </Application.Resources>
 </Application>
