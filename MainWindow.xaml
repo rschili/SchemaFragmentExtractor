@@ -17,7 +17,7 @@
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate>
-                                            <TextBlock Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center">Drop Schema Files (*.ecschema.xml) here</TextBlock>
+                                            <TextBlock Foreground="Gray" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center">Drop Schema Files (*.ecschema.xml) here</TextBlock>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -36,8 +36,8 @@
             <DockPanel>
                 <TextBox DockPanel.Dock="Top" Text="{Binding ClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Foreground="Gray">Pick the classes you want to use by selecting them. Multiple Items are supported.</TextBlock>
-                    <TextBlock Foreground="Gray">The TextBox above can be used to filter classes (Multiple keywords supported, split by space)</TextBlock>
+                    <TextBlock Foreground="Gray" Margin="5,10,0,0">Pick the classes you want to use by selecting them. Multiple Items are supported.</TextBlock>
+                    <TextBlock Margin="2,0,0,10" Foreground="Gray">The TextBox above can be used to filter classes (Multiple keywords supported, split by space)</TextBlock>
                     <TextBlock Text="{Binding ElementName=FilteredClassesView, Path=Items.Count, StringFormat={}{0} Classes found}" />
                 </StackPanel>
                 <ListView x:Name="FilteredClassesView" Grid.Row="1" ItemsSource="{Binding AllClasses}" SelectionMode="Multiple" SelectionChanged="FilteredClassesView_SelectionChanged">
@@ -53,11 +53,11 @@
         <TabItem Header="Format">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Foreground="Gray">Result Schema can be copies from the box below.</TextBlock>
-                    <CheckBox>Remove DisplayLabels</CheckBox>
-                    <CheckBox>Remove Descriptions</CheckBox>
+                    <TextBlock Foreground="Gray" Margin="5,0,0,10">Result Schema can be copied from the box below.</TextBlock>
+                    <CheckBox IsChecked="{Binding RemoveDisplayLabels}">Remove DisplayLabels</CheckBox>
+                    <CheckBox IsChecked="{Binding RemoveDescriptions}">Remove Descriptions</CheckBox>
                 </StackPanel>
-                <TextBox Text="{Binding Result}" IsReadOnly="True" />
+                <TextBox Text="{Binding Result}" IsReadOnly="True" VerticalScrollBarVisibility="Visible" />
             </DockPanel>
         </TabItem>
     </TabControl>
