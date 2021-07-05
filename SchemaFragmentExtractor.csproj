@@ -6,6 +6,15 @@
     <UseWPF>true</UseWPF>
     <StartupObject>SchemaFragmentExtractor.App</StartupObject>
     <Nullable>enable</Nullable>
+    <ApplicationIcon>AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AppIcon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="AppIcon.png" />
+  </ItemGroup>
 
 </Project>

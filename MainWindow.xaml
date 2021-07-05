@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SchemaFragmentExtractor" d:DataContext="{d:DesignInstance Type=local:ViewModel}"
         mc:Ignorable="d"
-        Title="Schema Fragment Extractor Supreme" Height="450" Width="800">
+        Title="Schema Fragment Extractor Supreme" Height="450" Width="800" Icon="/AppIcon.png">
     <TabControl>
         <TabItem Header="Input">
             <ListBox AllowDrop="True" IsSynchronizedWithCurrentItem="True" DragOver="InputDragOver" Drop="InputDrop" ItemsSource="{Binding Schemas}">
@@ -17,7 +17,9 @@
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate>
-                                            <TextBlock Foreground="Gray" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center">Drop Schema Files (*.ecschema.xml) here</TextBlock>
+                                            <Border Background="White">
+                                                <TextBlock Foreground="Gray" VerticalAlignment="Center" TextAlignment="Center">Drop Schema Files (*.ecschema.xml) here</TextBlock>
+                                            </Border>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
