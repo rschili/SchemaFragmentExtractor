@@ -125,7 +125,7 @@ namespace SchemaFragmentExtractor
 
             var firstClass = SelectedClasses.First();
             var originalRoot = firstClass.Schema.Document?.Root;
-            var rootName = originalRoot.Name;
+            var rootName = originalRoot?.Name;
             if (rootName == null || originalRoot == null)
                 return; //just to be defensive, should never happen
 
@@ -182,6 +182,23 @@ namespace SchemaFragmentExtractor
 
         public List<ECClass> Classes { get; } = new List<ECClass>();
 
+        public IDictionary<string, string> References { get; } =  new Dictionary<string, string>();
+
+        private void LoadReferences()
+        {
+            var references = Document?.Root?.Elements("ECSchemaReference");
+            if (references == null)
+                return;
+
+            foreach (var reference in references)
+            {
+                var alias = reference.Attribute("alias")?.Value;
+                var name = reference.Attribute("name")?.Value;
+                if (alias != null && name != null)
+                    References.Add(alias, name);
+            }
+        }
+
         internal async Task LoadAsync()
         {
             try
@@ -223,6 +240,8 @@ namespace SchemaFragmentExtractor
             if (SchemaName == null || Version == null || root == null)
                 throw new InvalidDataException("Format unknown.");
 
+            LoadReferences();
+
             foreach (var child in root.Elements())
             {
                 if (!IsClassElement(child))
@@ -249,5 +268,26 @@ namespace SchemaFragmentExtractor
             Element = child;
             Schema = schema;
         }
+        internal List<ClassReference> GetClassDependencies()
+        {
+            List<ClassReference> result = new List<ClassReference>();
+            foreach(var baseClassElement in Element.Elements("BaseClass"))
+            {
+                var baseClass = baseClassElement.Value.Split(':');
+                if (baseClass.Length == 1)
+                    result.Add(new ClassReference(SchemaName, baseClass[0]));
+                else if (baseClass.Length == 2)
+                {
+                    var schemaName = Schema.References[baseClass[0]];
+                    if(schemaName != null)
+                        result.Add(new ClassReference(schemaName, baseClass[1]));
+                }
+                //Ignore more results, unknown format
+            }
+
+            return result;
+        }
     }
+
+    public record ClassReference(string SchemaName, string ClassName);
 }
