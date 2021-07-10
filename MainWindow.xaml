@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:local="clr-namespace:SchemaFragmentExtractor" d:DataContext="{d:DesignInstance Type=local:ViewModel}"
         mc:Ignorable="d"
         Title="Schema Fragment Extractor Supreme" Height="450" Width="800" Icon="/AppIcon.png">
@@ -59,7 +60,10 @@
                     <CheckBox IsChecked="{Binding RemoveDisplayLabels}">Remove DisplayLabels</CheckBox>
                     <CheckBox IsChecked="{Binding RemoveDescriptions}">Remove Descriptions</CheckBox>
                 </StackPanel>
-                <TextBox Text="{Binding Result}" IsReadOnly="True" VerticalScrollBarVisibility="Visible" />
+                <Border Margin="5" BorderBrush="AliceBlue" BorderThickness="1" >
+                <avalonedit:TextEditor Margin="2" SyntaxHighlighting="XML" ShowLineNumbers="True" IsReadOnly="True" VerticalScrollBarVisibility="Visible"
+                                       local:Behaviors.AvalonEditText="{Binding Result}"  />
+                </Border>
             </DockPanel>
         </TabItem>
     </TabControl>
