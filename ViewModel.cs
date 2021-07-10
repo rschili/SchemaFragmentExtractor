@@ -97,7 +97,9 @@ namespace SchemaFragmentExtractor
         }
 
         private bool removeDisplayLabels = true;
-        public bool RemoveDisplayLabels { get => removeDisplayLabels; set
+        public bool RemoveDisplayLabels
+        {
+            get => removeDisplayLabels; set
             {
                 removeDisplayLabels = value;
                 PerformPropertyChanged(nameof(RemoveDisplayLabels));
@@ -133,13 +135,22 @@ namespace SchemaFragmentExtractor
             root.ReplaceAttributes(originalRoot.Attributes());
             var xD = new XDocument(root);
 
-            foreach (var c in SelectedClasses)
+            var insertedClasses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var selectedClass in SelectedClasses)
             {
-                XElement deepCopy = new XElement(c.Element);
+                if (!insertedClasses.Add(selectedClass.FullName))
+                    continue;
+
+                var dependencies = selectedClass.GetClassDependencies();
+                foreach (var dependency in dependencies)
+                {
+                    InsertReferencedElements(root, selectedClass, dependency, insertedClasses);
+                }
+                XElement deepCopy = new XElement(selectedClass.Element);
                 root.Add(deepCopy);
             }
 
-            if(RemoveDisplayLabels)
+            if (RemoveDisplayLabels)
                 RemoveAttributes(root, "displayLabel");
 
             if (RemoveDescriptions)
@@ -147,6 +158,34 @@ namespace SchemaFragmentExtractor
 
             Result = xD.ToString();
             PerformPropertyChanged(nameof(Result));
+        }
+
+        private void InsertReferencedElements(XElement root, ECClass selectedClass, SchemaItemReference dependency, HashSet<string> insertedClasses)
+        {
+            ECClass? dependencyClass = null;
+            if (dependency.SchemaName.Equals(selectedClass.SchemaName))
+            {
+                dependencyClass = selectedClass.Schema.Classes.FirstOrDefault(c => c.TypeName.Equals(dependency.TypeName));
+            }
+            else
+            {
+                var dependencySchema = Schemas.FirstOrDefault(s => dependency.SchemaName.Equals(s.SchemaName));
+                if (dependencySchema != null)
+                    dependencyClass = dependencySchema.Classes.FirstOrDefault(c => c.TypeName.Equals(dependency.TypeName));
+            }
+
+            if (dependencyClass == null) //TODO: build dependencyClass as dummy
+                return;
+
+            if (!insertedClasses.Add(dependencyClass.FullName))
+                return;
+
+            foreach (var subDependency in dependencyClass.GetClassDependencies())
+            {
+                InsertReferencedElements(root, dependencyClass, subDependency, insertedClasses);
+            }
+            XElement dependencyDeepCopy = new XElement(dependencyClass.Element);
+            root.Add(dependencyDeepCopy);
         }
 
         private static void RemoveAttributes(XElement root, XName attributeName)
@@ -182,7 +221,7 @@ namespace SchemaFragmentExtractor
 
         public List<ECClass> Classes { get; } = new List<ECClass>();
 
-        public IDictionary<string, string> References { get; } =  new Dictionary<string, string>();
+        public IDictionary<string, string> References { get; } = new Dictionary<string, string>();
 
         private void LoadReferences()
         {
@@ -257,6 +296,8 @@ namespace SchemaFragmentExtractor
     public class ECClass
     {
         public string TypeName { get; init; }
+
+        public string FullName => $"{SchemaName}:{TypeName}";
         public string SchemaName => Schema?.SchemaName ?? "";
         public XElement Element { get; init; }
 
@@ -268,19 +309,19 @@ namespace SchemaFragmentExtractor
             Element = child;
             Schema = schema;
         }
-        internal List<ClassReference> GetClassDependencies()
+        internal List<SchemaItemReference> GetClassDependencies()
         {
-            List<ClassReference> result = new List<ClassReference>();
-            foreach(var baseClassElement in Element.Elements("BaseClass"))
+            List<SchemaItemReference> result = new List<SchemaItemReference>();
+            foreach (var baseClassElement in Element.Elements(Element.Name.Namespace + "BaseClass"))
             {
                 var baseClass = baseClassElement.Value.Split(':');
                 if (baseClass.Length == 1)
-                    result.Add(new ClassReference(SchemaName, baseClass[0]));
+                    result.Add(new SchemaItemReference(SchemaName, baseClass[0]));
                 else if (baseClass.Length == 2)
                 {
                     var schemaName = Schema.References[baseClass[0]];
-                    if(schemaName != null)
-                        result.Add(new ClassReference(schemaName, baseClass[1]));
+                    if (schemaName != null)
+                        result.Add(new SchemaItemReference(schemaName, baseClass[1]));
                 }
                 //Ignore more results, unknown format
             }
@@ -289,5 +330,5 @@ namespace SchemaFragmentExtractor
         }
     }
 
-    public record ClassReference(string SchemaName, string ClassName);
+    public record SchemaItemReference(string SchemaName, string TypeName);
 }
