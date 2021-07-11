@@ -21,7 +21,7 @@
                                         <Setter.Value>
                                             <ControlTemplate>
                                                 <Border Background="White">
-                                                    <Label Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center">Drop Schema Files (*.ecschema.xml) here</Label>
+                                                    <TextBlock Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap">Drop Schema Files (*.ecschema.xml) here. References will automatically be loaded from the same directory.</TextBlock>
                                                 </Border>
                                             </ControlTemplate>
                                         </Setter.Value>

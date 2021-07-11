@@ -69,11 +69,55 @@ namespace SchemaFragmentExtractor
 
         public async Task LoadFiles(params string[] files)
         {
-            var schemaFiles = files.Select(f => new SchemaFile(f)).ToList();
+            var schemaFiles = files
+                .Where(f => f.EndsWith(".ecschema.xml", StringComparison.OrdinalIgnoreCase))
+                .Select(f => new SchemaFile(f)).ToList();
+
+            await LoadSchemaFilesWithReferences(schemaFiles);
+            await Task.Run(() => RegenerateCache());
+        }
+
+        private async Task LoadSchemaFilesWithReferences(List<SchemaFile> schemaFiles)
+        {
             Schemas.AddRange(schemaFiles);
             var schemaFileLoadTasks = schemaFiles.Select(f => f.LoadAsync());
             await Task.WhenAll(schemaFileLoadTasks);
-            await Task.Run(() => RegenerateCache());
+
+            var referencedSchemaNamesToLoad = schemaFiles
+                .SelectMany(sf => sf.References.Values)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(schemaName => !Schemas.Any(s => schemaName.Equals(s.SchemaName, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            var schemaDirectories = Schemas
+                .Select(s => Path.GetDirectoryName(s.FullPath))
+                .Where(sf => sf != null).Cast<string>()
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var subSchemaFiles = FindSchemaFiles(schemaDirectories, referencedSchemaNamesToLoad);
+            if (subSchemaFiles.Count > 0)
+                await LoadSchemaFilesWithReferences(subSchemaFiles);
+        }
+
+        private List<SchemaFile> FindSchemaFiles(List<string> directories, List<string> schemaNames)
+        {
+            var schemaFiles = schemaNames.Select(sn => FindSchemaFile(directories, sn))
+                .Where(sf => sf != null).Cast<string>()
+                .Select(sf => new SchemaFile(sf)).ToList();
+            return schemaFiles;
+        }
+
+        private string? FindSchemaFile(List<string> directories, string schemaName)
+        {
+            foreach(var directory in directories)
+            {
+                var result = Directory.GetFiles(directory, $"{schemaName}*ecschema.xml", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (result != null)
+                    return result;
+            }
+
+            return null;
         }
 
         public void RegenerateCache()
@@ -136,10 +180,10 @@ namespace SchemaFragmentExtractor
         {
             var generator = new SchemaGenerator(Schemas);
             var attributeFilter = StringUtils.SplitFilter(AttributeFilter);
-            Result = generator.BuildResultSchema(SelectedClasses, attributeFilter);
+            Result = generator.BuildResultSchema(SelectedClasses, FilterAttributes ? attributeFilter : new List<string>());
             PerformPropertyChanged(nameof(Result));
         }
-        
+
     }
     public class SchemaFile : ViewModelBase
     {
@@ -162,22 +206,10 @@ namespace SchemaFragmentExtractor
 
         public List<ECClass> Classes { get; } = new List<ECClass>();
 
+        /// <summary>
+        /// Key = alias, Value = Reference Schema Name
+        /// </summary>
         public IDictionary<string, string> References { get; } = new Dictionary<string, string>();
-
-        private void LoadReferences()
-        {
-            var references = Document?.Root?.Elements("ECSchemaReference");
-            if (references == null)
-                return;
-
-            foreach (var reference in references)
-            {
-                var alias = reference.Attribute("alias")?.Value;
-                var name = reference.Attribute("name")?.Value;
-                if (alias != null && name != null)
-                    References.Add(alias, name);
-            }
-        }
 
         internal async Task LoadAsync()
         {
@@ -203,7 +235,7 @@ namespace SchemaFragmentExtractor
             }
         }
 
-        private Regex _classCheckRegex = new Regex(@"^EC(\w*)Class$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex _classCheckRegex = new Regex(@"^EC(\w*)Class$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         internal bool IsClassElement(XElement element)
         {
             if (element == null) return false;
@@ -230,6 +262,24 @@ namespace SchemaFragmentExtractor
                 var typeName = child.Attribute("typeName")?.Value;
                 if (typeName == null) continue; // Should never happen?
                 Classes.Add(new ECClass(typeName, child, this));
+            }
+        }
+        private void LoadReferences()
+        {
+            var root = Document?.Root;
+            if (root == null)
+                return;
+
+            var references = root.Elements(root.Name.Namespace + "ECSchemaReference");
+            if (references == null)
+                return;
+
+            foreach (var reference in references)
+            {
+                var alias = reference.Attribute("alias")?.Value;
+                var name = reference.Attribute("name")?.Value;
+                if (alias != null && name != null)
+                    References.Add(alias, name);
             }
         }
     }
