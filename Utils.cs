@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SchemaFragmentExtractor
@@ -38,6 +39,18 @@ namespace SchemaFragmentExtractor
             }
             _suppressNotification = false;
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+    }
+
+    public class StringUtils
+    {
+        static readonly Regex filterRegex = new Regex(@"[\""].+?[\""]|[^ ]+", RegexOptions.Compiled);
+
+        public static List<string> SplitFilter(string filter)
+        {
+            return filterRegex.Matches(filter)
+                .Select(m => m.Value.Trim('"'))
+                .ToList();
         }
     }
 }

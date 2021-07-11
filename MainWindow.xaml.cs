@@ -57,5 +57,10 @@ namespace SchemaFragmentExtractor
         {
             VM.SelectClasses(FilteredClassesView.SelectedItems.Cast<ECClass>().ToList());
         }
+
+        private void Regenerate_Click(object sender, RoutedEventArgs e)
+        {
+            VM?.BuildResultSchema();
+        }
     }
 }

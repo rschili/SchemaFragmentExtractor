@@ -55,12 +55,19 @@
         </TabItem>
         <TabItem Header="Result">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                    <StackPanel>
-                        <Label FontWeight="Bold">Application Options</Label>
-                        <CheckBox IsChecked="{Binding RemoveDisplayLabels}">Remove DisplayLabels</CheckBox>
-                        <CheckBox IsChecked="{Binding RemoveDescriptions}">Remove Descriptions</CheckBox>
+                <Grid DockPanel.Dock="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Margin="5" Grid.Column="0">
+                        <Label Padding="0" FontWeight="Bold">Remove Attributes</Label>
+                        <TextBox  DockPanel.Dock="Top" Text="{Binding AttributeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
+                </Grid>
+                <StackPanel DockPanel.Dock="Top">
+                    <Button Content=" Regenerate Schema " HorizontalAlignment="Left" Margin="5" Click="Regenerate_Click" />
                 </StackPanel>
                 <Border Margin="5" BorderBrush="AliceBlue" BorderThickness="1" >
                     <avalonedit:TextEditor Margin="2" SyntaxHighlighting="XML" ShowLineNumbers="True" IsReadOnly="True" VerticalScrollBarVisibility="Visible"

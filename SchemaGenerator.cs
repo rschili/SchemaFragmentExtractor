@@ -17,7 +17,7 @@ namespace SchemaFragmentExtractor
             Schemas = schemas;
         }
 
-        internal string BuildResultSchema(List<ECClass> selectedClasses, bool removeDisplayLabels, bool removeDescriptions)
+        internal string BuildResultSchema(List<ECClass> selectedClasses, List<string> attributeFilters)
         {
             if (selectedClasses.Count == 0)
             {
@@ -49,11 +49,8 @@ namespace SchemaFragmentExtractor
                 root.Add(deepCopy);
             }
 
-            if (removeDisplayLabels)
-                RemoveAttributes(root, "displayLabel");
-
-            if (removeDescriptions)
-                RemoveAttributes(root, "description");
+            foreach(var filter in attributeFilters)
+                RemoveAttributes(root, filter);
 
             return xD.ToString();
         }
@@ -107,8 +104,8 @@ namespace SchemaFragmentExtractor
                     result.Add(new SchemaItemReference(c.SchemaName, baseClass[0]));
                 else if (baseClass.Length == 2)
                 {
-                    var schemaName = c.Schema.References[baseClass[0]];
-                    if (schemaName != null)
+                    string? schemaName;
+                    if (c.Schema.References.TryGetValue(baseClass[0], out schemaName) && schemaName != null)
                         result.Add(new SchemaItemReference(schemaName, baseClass[1]));
                 }
                 //Ignore more results, unknown format

@@ -36,9 +36,7 @@ namespace SchemaFragmentExtractor
             set
             {
                 _classFilter = value;
-                ClassFilters = Regex.Matches(value, @"[\""].+?[\""]|[^ ]+")
-                                .Select(m => m.Value.Trim('"'))
-                                .ToList();
+                ClassFilters = StringUtils.SplitFilter(value);
                 //PerformPropertyChanged(nameof(ClassFilter));
                 CollectionViewSource.GetDefaultView(AllClasses).Refresh();
             }
@@ -96,31 +94,13 @@ namespace SchemaFragmentExtractor
             BuildResultSchema();
         }
 
-        private bool removeDisplayLabels = true;
-        public bool RemoveDisplayLabels
-        {
-            get => removeDisplayLabels; set
-            {
-                removeDisplayLabels = value;
-                PerformPropertyChanged(nameof(RemoveDisplayLabels));
-                BuildResultSchema();
-            }
-        }
-        private bool removeDescriptions = true;
-        public bool RemoveDescriptions
-        {
-            get => removeDescriptions; set
-            {
-                removeDescriptions = value;
-                PerformPropertyChanged(nameof(RemoveDescriptions));
-                BuildResultSchema();
-            }
-        }
+        public string AttributeFilter { get; set; } = "displayLabel description";
 
         public void BuildResultSchema()
         {
             var generator = new SchemaGenerator(Schemas);
-            Result = generator.BuildResultSchema(SelectedClasses, RemoveDisplayLabels, RemoveDescriptions);
+            var attributeFilter = StringUtils.SplitFilter(AttributeFilter);
+            Result = generator.BuildResultSchema(SelectedClasses, attributeFilter);
             PerformPropertyChanged(nameof(Result));
         }
         
