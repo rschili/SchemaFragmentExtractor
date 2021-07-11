@@ -74,7 +74,7 @@ namespace SchemaFragmentExtractor
                 .Select(f => new SchemaFile(f)).ToList();
 
             await LoadSchemaFilesWithReferences(schemaFiles);
-            await Task.Run(() => RegenerateCache());
+            await Task.Run(() => RegenerateClassCache());
         }
 
         private async Task LoadSchemaFilesWithReferences(List<SchemaFile> schemaFiles)
@@ -120,7 +120,7 @@ namespace SchemaFragmentExtractor
             return null;
         }
 
-        public void RegenerateCache()
+        public void RegenerateClassCache()
         {
             List<ECClass> classes = new List<ECClass>();
             foreach (var schema in Schemas)

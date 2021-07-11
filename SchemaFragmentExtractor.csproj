@@ -11,6 +11,10 @@
 
   <ItemGroup>
     <None Remove="AppIcon.png" />
+    <None Remove="icons.afdesign" />
+    <None Remove="LICENSE" />
+    <None Remove="README.md" />
+    <None Remove="Screenshot.png" />
   </ItemGroup>
 
   <ItemGroup>
