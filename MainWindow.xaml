@@ -19,7 +19,7 @@
                                     <Setter.Value>
                                         <ControlTemplate>
                                             <Border Background="White">
-                                                <TextBlock Foreground="Gray" VerticalAlignment="Center" TextAlignment="Center">Drop Schema Files (*.ecschema.xml) here</TextBlock>
+                                                <Label Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center">Drop Schema Files (*.ecschema.xml) here</Label>
                                             </Border>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -37,11 +37,11 @@
         </TabItem>
         <TabItem Header="Select">
             <DockPanel>
-                <TextBox DockPanel.Dock="Top" Text="{Binding ClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Foreground="Gray" Margin="5,10,0,0">Pick the classes you want to use by selecting them. Multiple Items are supported.</TextBlock>
-                    <TextBlock Margin="2,0,0,10" Foreground="Gray">The TextBox above can be used to filter classes (Multiple keywords supported, split by space)</TextBlock>
-                    <TextBlock Text="{Binding ElementName=FilteredClassesView, Path=Items.Count, StringFormat={}{0} Classes found}" />
+                <TextBox Margin="5,5,5,0" DockPanel.Dock="Top" Text="{Binding ClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel DockPanel.Dock="Top" Margin="5,0,5,5">
+                    <Label Padding="0" IsEnabled="False">Pick the classes you want to use by selecting them. Multiple Items are supported.</Label>
+                    <Label Padding="0" IsEnabled="False">The TextBox above can be used to filter classes (Multiple keywords supported, split by space)</Label>
+                    <TextBlock Text="{Binding ElementName=FilteredClassesView, Path=Items.Count, StringFormat={}{0} Classes found, FallbackValue=Nothing selected}" />
                 </StackPanel>
                 <ListView x:Name="FilteredClassesView" Grid.Row="1" ItemsSource="{Binding AllClasses}" SelectionMode="Multiple" SelectionChanged="FilteredClassesView_SelectionChanged">
                     <ListView.View>
@@ -53,15 +53,17 @@
                 </ListView>
             </DockPanel>
         </TabItem>
-        <TabItem Header="Format">
+        <TabItem Header="Result">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Top">
-                    <TextBlock Foreground="Gray" Margin="5,0,0,10">Result Schema can be copied from the box below.</TextBlock>
-                    <CheckBox IsChecked="{Binding RemoveDisplayLabels}">Remove DisplayLabels</CheckBox>
-                    <CheckBox IsChecked="{Binding RemoveDescriptions}">Remove Descriptions</CheckBox>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                    <StackPanel>
+                        <Label FontWeight="Bold">Application Options</Label>
+                        <CheckBox IsChecked="{Binding RemoveDisplayLabels}">Remove DisplayLabels</CheckBox>
+                        <CheckBox IsChecked="{Binding RemoveDescriptions}">Remove Descriptions</CheckBox>
+                    </StackPanel>
                 </StackPanel>
                 <Border Margin="5" BorderBrush="AliceBlue" BorderThickness="1" >
-                <avalonedit:TextEditor Margin="2" SyntaxHighlighting="XML" ShowLineNumbers="True" IsReadOnly="True" VerticalScrollBarVisibility="Visible"
+                    <avalonedit:TextEditor Margin="2" SyntaxHighlighting="XML" ShowLineNumbers="True" IsReadOnly="True" VerticalScrollBarVisibility="Visible"
                                        local:Behaviors.AvalonEditText="{Binding Result}"  />
                 </Border>
             </DockPanel>

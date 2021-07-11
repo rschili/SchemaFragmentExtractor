@@ -116,89 +116,14 @@ namespace SchemaFragmentExtractor
                 BuildResultSchema();
             }
         }
-        internal void BuildResultSchema()
+
+        public void BuildResultSchema()
         {
-            if (SelectedClasses.Count == 0)
-            {
-                Result = "No classes selected.";
-                PerformPropertyChanged(nameof(Result));
-                return;
-            }
-
-            var firstClass = SelectedClasses.First();
-            var originalRoot = firstClass.Schema.Document?.Root;
-            var rootName = originalRoot?.Name;
-            if (rootName == null || originalRoot == null)
-                return; //just to be defensive, should never happen
-
-            var root = new XElement(rootName);
-            root.ReplaceAttributes(originalRoot.Attributes());
-            var xD = new XDocument(root);
-
-            var insertedClasses = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var selectedClass in SelectedClasses)
-            {
-                if (!insertedClasses.Add(selectedClass.FullName))
-                    continue;
-
-                var dependencies = selectedClass.GetClassDependencies();
-                foreach (var dependency in dependencies)
-                {
-                    InsertReferencedElements(root, selectedClass, dependency, insertedClasses);
-                }
-                XElement deepCopy = new XElement(selectedClass.Element);
-                root.Add(deepCopy);
-            }
-
-            if (RemoveDisplayLabels)
-                RemoveAttributes(root, "displayLabel");
-
-            if (RemoveDescriptions)
-                RemoveAttributes(root, "description");
-
-            Result = xD.ToString();
+            var generator = new SchemaGenerator(Schemas);
+            Result = generator.BuildResultSchema(SelectedClasses, RemoveDisplayLabels, RemoveDescriptions);
             PerformPropertyChanged(nameof(Result));
         }
-
-        private void InsertReferencedElements(XElement root, ECClass selectedClass, SchemaItemReference dependency, HashSet<string> insertedClasses)
-        {
-            ECClass? dependencyClass = null;
-            if (dependency.SchemaName.Equals(selectedClass.SchemaName))
-            {
-                dependencyClass = selectedClass.Schema.Classes.FirstOrDefault(c => c.TypeName.Equals(dependency.TypeName));
-            }
-            else
-            {
-                var dependencySchema = Schemas.FirstOrDefault(s => dependency.SchemaName.Equals(s.SchemaName));
-                if (dependencySchema != null)
-                    dependencyClass = dependencySchema.Classes.FirstOrDefault(c => c.TypeName.Equals(dependency.TypeName));
-            }
-
-            if (dependencyClass == null) //TODO: build dependencyClass as dummy
-                return;
-
-            if (!insertedClasses.Add(dependencyClass.FullName))
-                return;
-
-            foreach (var subDependency in dependencyClass.GetClassDependencies())
-            {
-                InsertReferencedElements(root, dependencyClass, subDependency, insertedClasses);
-            }
-            XElement dependencyDeepCopy = new XElement(dependencyClass.Element);
-            root.Add(dependencyDeepCopy);
-        }
-
-        private static void RemoveAttributes(XElement root, XName attributeName)
-        {
-            root.Attribute(attributeName)?.Remove();
-            if (root.HasElements)
-            {
-                foreach (var child in root.Elements())
-                {
-                    RemoveAttributes(child, attributeName);
-                }
-            }
-        }
+        
     }
     public class SchemaFile : ViewModelBase
     {
@@ -309,26 +234,5 @@ namespace SchemaFragmentExtractor
             Element = child;
             Schema = schema;
         }
-        internal List<SchemaItemReference> GetClassDependencies()
-        {
-            List<SchemaItemReference> result = new List<SchemaItemReference>();
-            foreach (var baseClassElement in Element.Elements(Element.Name.Namespace + "BaseClass"))
-            {
-                var baseClass = baseClassElement.Value.Split(':');
-                if (baseClass.Length == 1)
-                    result.Add(new SchemaItemReference(SchemaName, baseClass[0]));
-                else if (baseClass.Length == 2)
-                {
-                    var schemaName = Schema.References[baseClass[0]];
-                    if (schemaName != null)
-                        result.Add(new SchemaItemReference(schemaName, baseClass[1]));
-                }
-                //Ignore more results, unknown format
-            }
-
-            return result;
-        }
     }
-
-    public record SchemaItemReference(string SchemaName, string TypeName);
 }
