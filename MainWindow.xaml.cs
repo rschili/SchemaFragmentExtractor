@@ -54,14 +54,45 @@ namespace SchemaFragmentExtractor
             e.Handled = true;
         }
 
-        private void FilteredClassesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            VM.SelectClasses(FilteredClassesView.SelectedItems.Cast<ECClass>().ToList());
-        }
+        /*
+         *             if (!SelectedClasses.Contains(c))
+                SelectedClasses.Add(c);
+            BuildResultSchema();
+         * */
 
         private void Regenerate_Click(object sender, RoutedEventArgs e)
         {
             VM?.BuildResultSchema();
+        }
+
+        private void ECClassListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var item = ((ListViewItem)sender).Content as ECClass;
+            if (item == null)
+                return;
+
+            if (!VM.SelectedClasses.Contains(item))
+            {
+                VM.SelectedClasses.Add(item);
+                VM.BuildResultSchema();
+            }
+
+            e.Handled = true;
+        }
+
+        private void SelectClass_Click(object sender, RoutedEventArgs e)
+        {
+            var item = FilteredClassesView.SelectedItem as ECClass;
+            if (item == null)
+                return;
+
+            if (!VM.SelectedClasses.Contains(item))
+            {
+                VM.SelectedClasses.Add(item);
+                VM.BuildResultSchema();
+            }
+
+            e.Handled = true;
         }
     }
 }

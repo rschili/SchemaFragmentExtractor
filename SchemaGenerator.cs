@@ -17,7 +17,7 @@ namespace SchemaFragmentExtractor
             Schemas = schemas;
         }
 
-        internal string BuildResultSchema(List<ECClass> selectedClasses, List<string> attributeFilters)
+        internal string BuildResultSchema(ICollection<ECClass> selectedClasses, List<string> attributeFilters)
         {
             if (selectedClasses.Count == 0)
             {

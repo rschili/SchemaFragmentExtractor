@@ -24,7 +24,7 @@ namespace SchemaFragmentExtractor
 
         public BulkObservableCollection<ECClass> AllClasses { get; } = new BulkObservableCollection<ECClass>();
 
-        public List<ECClass> SelectedClasses { get; set; } = new List<ECClass>();
+        public BulkObservableCollection<ECClass> SelectedClasses { get; } = new BulkObservableCollection<ECClass>();
 
         private string _classFilter = "";
 
@@ -131,11 +131,6 @@ namespace SchemaFragmentExtractor
                 AllClasses.Clear();
                 AllClasses.AddRange(classes);
             });
-        }
-        internal void SelectClasses(List<ECClass> classes)
-        {
-            SelectedClasses = classes;
-            BuildResultSchema();
         }
 
         private bool filterAttributes = true;

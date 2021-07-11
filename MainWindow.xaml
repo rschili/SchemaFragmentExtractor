@@ -5,9 +5,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         xmlns:local="clr-namespace:SchemaFragmentExtractor" d:DataContext="{d:DesignInstance Type=local:ViewModel}"
         mc:Ignorable="d"
-        Title="Schema Fragment Extractor Supreme" Height="450" Width="800" Icon="/AppIcon.png">
+        Title="Schema Fragment Extractor Supreme" Height="450" Width="1000" Icon="/AppIcon.png">
     <TabControl Style="{StaticResource MahApps.Styles.TabControl.AnimatedSingleRow}">
         <TabItem Header="1. Input">
             <Border Margin="5" BorderBrush="{StaticResource MahApps.Brushes.Accent}" BorderThickness="1" >
@@ -39,15 +40,29 @@
             </Border>
         </TabItem>
         <TabItem Header="2. Select">
-            <DockPanel>
-                <TextBox Margin="5,5,5,0" DockPanel.Dock="Top" Text="{Binding ClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <StackPanel DockPanel.Dock="Top" Margin="5,0,5,5">
-                    <Label Padding="0" IsEnabled="False">Pick the classes you want to use by selecting them. Multiple Items are supported.</Label>
-                    <Label Padding="0" IsEnabled="False">The TextBox above can be used to filter classes (Multiple keywords supported, split by space)</Label>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Margin="5">
+                    <TextBox Text="{Binding ClassFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Foreground="Gray" TextWrapping="Wrap">Pick the classes you want to use by selecting them. Multiple Items are supported.
+                        <LineBreak/>You can filter classes (Multiple keywords supported, split by space)</TextBlock>
                     <TextBlock Text="{Binding ElementName=FilteredClassesView, Path=Items.Count, StringFormat={}{0} Classes found, FallbackValue=Nothing selected}" />
                 </StackPanel>
-                <Border Margin="5" BorderBrush="{StaticResource MahApps.Brushes.Accent}" BorderThickness="1" >
-                    <ListView x:Name="FilteredClassesView" Grid.Row="1" ItemsSource="{Binding AllClasses}" SelectionMode="Multiple" SelectionChanged="FilteredClassesView_SelectionChanged">
+                <Border Grid.Row="1" Margin="5" BorderBrush="{StaticResource MahApps.Brushes.Accent}" BorderThickness="1" >
+                    <Border.Resources>
+                        <Style x:Key="itemstyle" TargetType="{x:Type ListViewItem}">
+                            <EventSetter Event="MouseDoubleClick" Handler="ECClassListViewItem_MouseDoubleClick" />
+                        </Style>
+                    </Border.Resources>
+                    <ListView x:Name="FilteredClassesView" ItemsSource="{Binding AllClasses}" SelectionMode="Single" ItemContainerStyle="{StaticResource itemstyle}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="TypeName" Width="350" DisplayMemberBinding="{Binding TypeName}" />
@@ -56,7 +71,22 @@
                         </ListView.View>
                     </ListView>
                 </Border>
-            </DockPanel>
+                <Button Grid.Column="1" Grid.RowSpan="3" Width="37" Height="32" Margin="5" FontFamily="Marlett" FontSize="20" Click="SelectClass_Click">
+                    8
+                </Button>
+                <DockPanel Margin="5" Grid.RowSpan="3" Grid.Column="2">
+                    <TextBlock Foreground="Gray" DockPanel.Dock="Top" TextWrapping="Wrap">Selected Classes</TextBlock>
+                    <Border VerticalAlignment="Stretch" BorderBrush="{StaticResource MahApps.Brushes.Accent}" BorderThickness="1" >
+                        <ListView ItemsSource="{Binding SelectedClasses}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="TypeName" Width="320" DisplayMemberBinding="{Binding TypeName}" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Border>
+                </DockPanel>
+            </Grid>
         </TabItem>
         <TabItem Header="3. Format">
             <DockPanel>
@@ -84,7 +114,7 @@
                 </StackPanel>
                 <Border Margin="5" BorderBrush="{StaticResource MahApps.Brushes.Accent}" BorderThickness="1" >
                     <avalonedit:TextEditor Margin="2" SyntaxHighlighting="XML" ShowLineNumbers="True" IsReadOnly="True" VerticalScrollBarVisibility="Visible"
-                                       local:Behaviors.AvalonEditText="{Binding Result}"  />
+                                       local:Behaviors.AvalonEditText="{Binding Result}" />
                 </Border>
             </DockPanel>
         </TabItem>
