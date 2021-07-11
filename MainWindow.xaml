@@ -62,8 +62,16 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Margin="5" Grid.Column="0">
-                        <Label Padding="0" FontWeight="Bold">Remove Attributes</Label>
-                        <TextBox  DockPanel.Dock="Top" Text="{Binding AttributeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <CheckBox IsChecked="{Binding FilterAttributes}">Remove Attributes</CheckBox>
+                        <TextBox DockPanel.Dock="Top" TextWrapping="Wrap" Height="45" Text="{Binding AttributeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Margin="5" Grid.Column="1">
+                        <CheckBox IsChecked="{Binding FilterCustomAttributes}">Remove Custom Attributes except for</CheckBox>
+                        <TextBox DockPanel.Dock="Top" TextWrapping="Wrap" Height="45" Text="{Binding CustomAttributeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Margin="5" Grid.Column="2">
+                        <CheckBox IsChecked="{Binding ShortenAttributes}">Shorten values</CheckBox>
+                        <TextBox DockPanel.Dock="Top" TextWrapping="Wrap" Height="45" Text="{Binding AttributesToShorten, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </Grid>
                 <StackPanel DockPanel.Dock="Top">

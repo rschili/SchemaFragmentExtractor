@@ -94,7 +94,43 @@ namespace SchemaFragmentExtractor
             BuildResultSchema();
         }
 
+        private bool filterAttributes = true;
+        public bool FilterAttributes
+        {
+            get { return filterAttributes; }
+            set
+            {
+                filterAttributes = value;
+                BuildResultSchema();
+            }
+        }
         public string AttributeFilter { get; set; } = "displayLabel description";
+
+
+        private bool filterCustomAttributes = true;
+        public bool FilterCustomAttributes
+        {
+            get { return filterCustomAttributes; }
+            set
+            {
+                filterCustomAttributes = value;
+                BuildResultSchema();
+            }
+        }
+        public string CustomAttributeFilter { get; set; } = "ECDbMap.*";
+
+
+        private bool shortenAttributes = false;
+        public bool ShortenAttributes
+        {
+            get { return shortenAttributes; }
+            set
+            {
+                shortenAttributes = value;
+                BuildResultSchema();
+            }
+        }
+        public string AttributesToShorten { get; set; } = "typeName propertyName";
 
         public void BuildResultSchema()
         {
