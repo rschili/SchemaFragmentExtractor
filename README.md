@@ -9,3 +9,5 @@ The UI has 3 Tabs
 * The first tab lets you drop *.ecschema.xml files into a list to build your pool of data to choose from
 * The second tab allows you to select one or many classes from these schemas
 * The third tab gives the selection extracted and put into a schema with all of its dependencies. This also provides some options to modify the output XML.
+
+![Screenshot](Screenshot.png)
