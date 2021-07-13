@@ -175,7 +175,8 @@ namespace SchemaFragmentExtractor
         {
             var generator = new SchemaGenerator(Schemas);
             var attributeFilter = StringUtils.SplitFilter(AttributeFilter);
-            Result = generator.BuildResultSchema(SelectedClasses, FilterAttributes ? attributeFilter : new List<string>());
+            Result = generator.BuildResultSchema(SelectedClasses, FilterAttributes ? attributeFilter : new List<string>(),
+                FilterCustomAttributes ? StringUtils.SplitFilter(CustomAttributeFilter) : null);
             PerformPropertyChanged(nameof(Result));
         }
 

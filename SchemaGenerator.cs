@@ -17,7 +17,7 @@ namespace SchemaFragmentExtractor
             Schemas = schemas;
         }
 
-        internal string BuildResultSchema(ICollection<ECClass> selectedClasses, List<string> attributeFilters)
+        internal string BuildResultSchema(ICollection<ECClass> selectedClasses, List<string> attributeFilters, List<string>? customAttributeWhitelist)
         {
             if (selectedClasses.Count == 0)
             {
@@ -46,13 +46,73 @@ namespace SchemaFragmentExtractor
                     InsertReferencedElement(root, selectedClass, dependency, insertedClasses);
                 }
                 XElement deepCopy = new XElement(selectedClass.Element);
+                RemoveAliasFromBaseClasses(deepCopy);
                 root.Add(deepCopy);
             }
 
             foreach(var filter in attributeFilters)
                 RemoveAttributes(root, filter);
 
+            if(customAttributeWhitelist != null)
+            {
+                RemoveCustomAttributes(xD, customAttributeWhitelist);
+            }
+
+            StripEmptyElements(xD);
+
             return xD.ToString();
+        }
+
+        private void StripEmptyElements(XDocument xD)
+        {
+            var emptyElements = xD.Descendants().Where(d => string.IsNullOrWhiteSpace(d.Value)).ToList();
+            foreach (var ee in emptyElements)
+                ee.RemoveNodes();
+        }
+
+        private void RemoveCustomAttributes(XDocument xD, List<string> customAttributeWhitelist)
+        {
+            XName customAttributeNodeName = XName.Get("ECCustomAttributes", xD.Root?.Name.Namespace.NamespaceName ?? "");
+            var customAttributeElements = xD.Descendants(customAttributeNodeName).ToList();
+
+            foreach(var caElement in customAttributeElements)
+            {
+                RemoveWithNextWhitespace(caElement);
+            }
+        }
+
+        private void RemoveWithNextWhitespace(XElement element)
+        {
+            IEnumerable<XText> textNodes
+                = element.NodesAfterSelf()
+                         .TakeWhile(node => node is XText).Cast<XText>();
+            if (element.ElementsAfterSelf().Any())
+            {
+                // Easy case, remove following text nodes.
+                textNodes.ToList().ForEach(node => node.Remove());
+            }
+            else
+            {
+                // Remove trailing whitespace.
+                textNodes.TakeWhile(text => !text.Value.Contains("\n"))
+                         .ToList().ForEach(text => text.Remove());
+                // Fetch text node containing newline, if any.
+                XText? newLineTextNode
+                    = element.NodesAfterSelf().OfType<XText>().FirstOrDefault();
+                if (newLineTextNode != null)
+                {
+                    string value = newLineTextNode.Value;
+                    if (value.Length > 1)
+                    {
+                        // Composite text node, trim until newline (inclusive).
+                        newLineTextNode.AddAfterSelf(
+                            new XText(value.Substring(value.IndexOf('\n') + 1)));
+                    }
+                    // Remove original node.
+                    newLineTextNode.Remove();
+                }
+            }
+            element.Remove();
         }
 
         private void InsertReferencedElement(XElement root, ECClass selectedClass, SchemaItemReference dependency, HashSet<string> insertedClasses)
@@ -80,9 +140,21 @@ namespace SchemaFragmentExtractor
                 InsertReferencedElement(root, dependencyClass, subDependency, insertedClasses);
             }
             XElement dependencyDeepCopy = new XElement(dependencyClass.Element);
+            RemoveAliasFromBaseClasses(dependencyDeepCopy);
             root.Add(dependencyDeepCopy);
         }
 
+        private static void RemoveAliasFromBaseClasses(XElement classElement)
+        {
+            foreach (var baseClassElement in classElement.Elements(classElement.Name.Namespace + "BaseClass"))
+            {
+                var separatorIndex = baseClassElement.Value.IndexOf(':');
+                if(separatorIndex != -1)
+                {
+                    baseClassElement.Value = baseClassElement.Value.Substring(separatorIndex+1);
+                }
+            }
+        }
         private static void RemoveAttributes(XElement root, XName attributeName)
         {
             root.Attribute(attributeName)?.Remove();
