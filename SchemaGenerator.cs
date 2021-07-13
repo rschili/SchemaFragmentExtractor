@@ -58,14 +58,15 @@ namespace SchemaFragmentExtractor
                 RemoveCustomAttributes(xD, customAttributeWhitelist);
             }
 
-            StripEmptyElements(xD);
+            CompressEmptyElements(xD);
+            //TODO: Regex to remove empty lines
 
             return xD.ToString();
         }
 
-        private void StripEmptyElements(XDocument xD)
+        private void CompressEmptyElements(XDocument xD)
         {
-            var emptyElements = xD.Descendants().Where(d => string.IsNullOrWhiteSpace(d.Value)).ToList();
+            var emptyElements = xD.Descendants().Where(d => !d.HasElements && string.IsNullOrWhiteSpace(d.Value)).ToList();
             foreach (var ee in emptyElements)
                 ee.RemoveNodes();
         }
@@ -77,42 +78,8 @@ namespace SchemaFragmentExtractor
 
             foreach(var caElement in customAttributeElements)
             {
-                RemoveWithNextWhitespace(caElement);
+                caElement.Remove();
             }
-        }
-
-        private void RemoveWithNextWhitespace(XElement element)
-        {
-            IEnumerable<XText> textNodes
-                = element.NodesAfterSelf()
-                         .TakeWhile(node => node is XText).Cast<XText>();
-            if (element.ElementsAfterSelf().Any())
-            {
-                // Easy case, remove following text nodes.
-                textNodes.ToList().ForEach(node => node.Remove());
-            }
-            else
-            {
-                // Remove trailing whitespace.
-                textNodes.TakeWhile(text => !text.Value.Contains("\n"))
-                         .ToList().ForEach(text => text.Remove());
-                // Fetch text node containing newline, if any.
-                XText? newLineTextNode
-                    = element.NodesAfterSelf().OfType<XText>().FirstOrDefault();
-                if (newLineTextNode != null)
-                {
-                    string value = newLineTextNode.Value;
-                    if (value.Length > 1)
-                    {
-                        // Composite text node, trim until newline (inclusive).
-                        newLineTextNode.AddAfterSelf(
-                            new XText(value.Substring(value.IndexOf('\n') + 1)));
-                    }
-                    // Remove original node.
-                    newLineTextNode.Remove();
-                }
-            }
-            element.Remove();
         }
 
         private void InsertReferencedElement(XElement root, ECClass selectedClass, SchemaItemReference dependency, HashSet<string> insertedClasses)
@@ -179,6 +146,22 @@ namespace SchemaFragmentExtractor
                     string? schemaName;
                     if (c.Schema.References.TryGetValue(baseClass[0], out schemaName) && schemaName != null)
                         result.Add(new SchemaItemReference(schemaName, baseClass[1]));
+                }
+                //Ignore more results, unknown format
+            }
+
+            foreach (var structPropertyElement in c.Element.Elements(c.Element.Name.Namespace + "ECStructProperty"))
+            {
+                var structType = structPropertyElement.Attribute("typeName")?.Value?.Split(':');
+                if (structType == null)
+                    continue;
+                if (structType.Length == 1)
+                    result.Add(new SchemaItemReference(c.SchemaName, structType[0]));
+                else if (structType.Length == 2)
+                {
+                    string? schemaName;
+                    if (c.Schema.References.TryGetValue(structType[0], out schemaName) && schemaName != null)
+                        result.Add(new SchemaItemReference(schemaName, structType[1]));
                 }
                 //Ignore more results, unknown format
             }
